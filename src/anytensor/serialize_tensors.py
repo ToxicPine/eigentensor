@@ -1,4 +1,5 @@
 from tinygrad import Tensor, dtypes
+from numpy import ndarray
 
 ###
 # Tools For Serializing/Deserializing Tensors
@@ -22,7 +23,8 @@ class TensorSerializer:
         tensor.realize()
 
         # Get raw buffer data
-        raw_data = tensor.numpy().tobytes()
+        np_data: ndarray = tensor.numpy()
+        raw_data = np_data.tobytes()
 
         # Build metadata and buffer
         shape_str = ",".join(str(x) for x in tensor.shape)
