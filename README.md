@@ -93,7 +93,29 @@ result = execute_graph_on_gpu(task, inputs, weights)
 
 ### 3. Distributed Execution
 
-TODO!!
+You can use our REST API to access the GPU.
+
+```bash
+PRIMARY_TASK_UUID="1111-2222-3333-4444"
+PRIMARY_WEIGHTS_UUID="1111-2222-3333-4444"
+
+# The server will automatically download the task and weights from the URLs, verifying their hashes against the provided UUID values.
+anytensor-server 
+```
+
+For EigenLayer support, you also need to run the AVS client:
+
+```bash
+# TODO!!
+# anytensor-avs-client
+```
+
+We've provided a dockerfile for convenience, which orchestrates the above steps.
+
+```bash
+docker build -t anytensor .
+docker run -e PRIMARY_TASK_UUID="1111-2222-3333-4444" -e PRIMARY_WEIGHTS_UUID="1111-2222-3333-4444" anytensor
+```
 
 ## The Hackery
 
