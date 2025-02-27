@@ -27,7 +27,7 @@ No more wrestling with GPU complexities. No more framework limitations. Just wri
 EigenTensor leverages tinygrad as its computational backbone for several key reasons:
 
 1. **Lazy Evaluation**: rather than immediately executing instructions, tinygrad builds out a graph representing all operations to be executed on the GPU
-2. **Memory Safety**: the computational graph is not GPU code, making it memory-safe and cross-platform
+2. **Memory Safety**: the computational graph is not low-level GPU code, making it memory-safe and cross-platform
 3. **Consensus Support**: any two devices executing the same graph will get identical results, enabling consensus verification
 4. **Model Compatibility**: many existing ML models are already specified in tinygrad, making them immediately usable
 5. **Cross-Platform**: runs efficiently across CPU, GPU, and other accelerators without code changes
@@ -103,11 +103,11 @@ TinyGrad operates by building computational graphs that represent operations on 
 
 Our challenge was creating a system where computational graphs could be defined without specifying all input data upfront. We needed "placeholder" tensors that could be substituted with real data at execution time. This would allow us to share executable graphs that nodes could run with their own inputs.
 
-The solution involved modifying how TinyGrad's BUFFER operation works. Normally, a BUFFER operation takes a two-element tuple that encodes tensor information like shape and size. We discovered we could extend this tuple with a third element containing a special placeholder label string, without breaking TinyGrad's internal operations. 
+The solution involved modifying how TinyGrad's BUFFER operation works. Normally, a BUFFER operation takes a two-element tuple that encodes tensor information like shape and size. We discovered we could extend this tuple with a third element containing a special placeholder label string, without breaking TinyGrad's internal operations. This allowed us to substitute input values into the computational graph by specifying the placeholder label.
 
 This hack was necessary because TinyGrad's official metadata systems (like VOID patterns) were incompatible with graph composition operations - using them would have made it impossible to combine graphs involving placeholder tensors. Our approach was the only viable method we found after extensive testing.
 
-With this technique, we could create computational graphs that referenced placeholder tensors. These graphs could represent an entire ML model's execution process. When a node wants to run the computation, our system uses the undocumented graph-rewriting API of tinygrad to substitute the placeholders with actual tensors containing their data. We then serialize the graph using safe techniques, allowing it to be safely shared, stored, and executed later on any compatible GPU.
+With this technique, we could create computational graphs that referenced input tensors. These graphs could represent an entire ML model's execution process. When a node wants to run the computation, our system uses the undocumented graph-rewriting API of tinygrad to substitute the placeholders with actual tensors containing their data. We then serialize the graph using safe techniques, allowing it to be safely shared, stored, and executed later on any compatible GPU.
 
 The consensus verification system built on top of this is inspired by my previous academic work on the EvML paper for Exo Labs, which modeled consensus for verifiable computation. This theoretical foundation informed our implementation of the economic security model that makes EigenTensor's execution trustworthy across distributed nodes.
 
