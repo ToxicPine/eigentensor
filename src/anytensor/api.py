@@ -76,7 +76,7 @@ async def lifespan(app: FastAPI):
         _weights.clear()
 
 
-port = int(os.getenv("PORT", "4444"))
+port = int(os.getenv("ANYTENSOR_PORT", "4444"))
 app = FastAPI(lifespan=lifespan, port=port)
 
 
