@@ -65,7 +65,9 @@ def placeholder_export(output, shape, dtype):
     click.echo("\n### Creating placeholder and adding with first 4 tensors ###")
     tensor_context = TensorContext()
     placeholder_name = f"placeholder_{random.randint(10, 99)}"
-    placeholder = tensor_context.add_graph_input(placeholder_name, tensor_shape, tensor_dtype)
+    placeholder = tensor_context.add_graph_input(
+        placeholder_name, tensor_shape, tensor_dtype
+    )
     partial_sum = sum(tensors[:4]) + placeholder
 
     # Export the schedule

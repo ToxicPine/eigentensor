@@ -76,7 +76,8 @@ async def lifespan(app: FastAPI):
         _weights.clear()
 
 
-app = FastAPI(lifespan=lifespan)
+port = int(os.getenv("PORT", "4444"))
+app = FastAPI(lifespan=lifespan, port=port)
 
 
 class TaskInput(BaseModel):
