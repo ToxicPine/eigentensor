@@ -147,6 +147,12 @@ The system needs careful parameter tuning to ensure honesty remains profitable e
 
 Notably, by purchasing multiple GPUs, the operator could increase the probability of collusion. When there are enough possible nodes available for selection, it is difficult to influence the overall proportion of possible checking nodes that may jointly collude, so the probability of being caught when cheating remains high.
 
+## Limitations
+
+1. there's no way of delegating non-tensor computations to the AVS just yet, although this can be done fairly easily. support for non-tensor computations is important for popular LLMs, since the process of tokenizing and looping over tokens until the end of the sequence is a non-tensor operation. you can still perform this client-side, it's just not efficient.
+2. the consensus features are not yet formally proven, although we have tested them they appear to work as expected.
+3. some aspects of the code, such as our hacking around tinygrad and the system of deployment for this codebase, are prone to future breakage in future versions of tinygrad and Tangle.
+
 ## Getting Started
 
 ```bash
