@@ -98,6 +98,8 @@ You can use our REST API to access the GPU.
 ```bash
 PRIMARY_TASK_UUID="1111-2222-3333-4444"
 PRIMARY_WEIGHTS_UUID="1111-2222-3333-4444"
+PRIMARY_TASK_URL="https://example.com/task.pkl"
+PRIMARY_WEIGHTS_URL="https://example.com/weights.safetensors"
 
 # The server will automatically download the task and weights from the URLs, verifying their hashes against the provided UUID values.
 anytensor-server 
@@ -114,7 +116,7 @@ We've provided a dockerfile for convenience, which orchestrates the above steps.
 
 ```bash
 docker build -t anytensor .
-docker run -e PRIMARY_TASK_UUID="1111-2222-3333-4444" -e PRIMARY_WEIGHTS_UUID="1111-2222-3333-4444" anytensor
+docker run -e PRIMARY_TASK_UUID="1111-2222-3333-4444" -e PRIMARY_WEIGHTS_UUID="1111-2222-3333-4444" -e PRIMARY_TASK_URL="https://example.com/task.pkl" -e PRIMARY_WEIGHTS_URL="https://example.com/weights.safetensors" anytensor
 ```
 
 ## The Hackery

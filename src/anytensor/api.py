@@ -29,9 +29,11 @@ logger = logging.getLogger("anytensor")
 _tasks: Dict[str, GraphProgram] = {}
 _weights: Dict[str, ActualTensors] = {}
 
-# Get UUIDs from environment
+# Get UUIDs and URLs from environment
 PRIMARY_TASK_UUID = os.getenv("PRIMARY_TASK_UUID")
 PRIMARY_WEIGHTS_UUID = os.getenv("PRIMARY_WEIGHTS_UUID")
+PRIMARY_TASK_URL = os.getenv("PRIMARY_TASK_URL")
+PRIMARY_WEIGHTS_URL = os.getenv("PRIMARY_WEIGHTS_URL")
 
 if not PRIMARY_TASK_UUID or not PRIMARY_WEIGHTS_UUID:
     logger.error(
@@ -49,7 +51,7 @@ async def lifespan(app: FastAPI):
         if not PRIMARY_TASK_UUID:
             logger.error("PRIMARY_TASK_UUID is not set")
             raise ValueError("PRIMARY_TASK_UUID is not set")
-        task = fetch_exported_task_by_uuid(PRIMARY_TASK_UUID)
+        task = fetch_exported_task_by_uuid(PRIMARY_TASK_UUID, PRIMARY_TASK_URL)
 
         if not PRIMARY_WEIGHTS_UUID:
             logger.error("PRIMARY_WEIGHTS_UUID is not set")
@@ -58,7 +60,7 @@ async def lifespan(app: FastAPI):
         if isinstance(task, ValueError):
             logger.error(f"Failed to load primary task: {task}")
             raise ValueError("Failed to load primary task")
-        weights = fetch_safetensors_by_uuid(PRIMARY_WEIGHTS_UUID)
+        weights = fetch_safetensors_by_uuid(PRIMARY_WEIGHTS_UUID, PRIMARY_WEIGHTS_URL)
         if isinstance(weights, ValueError):
             logger.error(f"Failed to load primary weights: {weights}")
             raise ValueError("Failed to load primary weights")
