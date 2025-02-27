@@ -4,6 +4,7 @@ from tinygrad.shape.shapetracker import ShapeTracker
 from tinygrad.dtype import dtypes, DType
 from tinygrad.device import Device
 from tinygrad.ops import UOp, Ops
+from anytensor.types import ActualTensors
 from anytensor.graph_rewriting import substitute_placeholder_uop, find_all_placeholders
 from tinygrad import Tensor
 from dataclasses import dataclass
@@ -13,9 +14,6 @@ import pathlib
 
 # Directory for storing application data
 APP_DIR = pathlib.Path.home() / ".tinygrad"
-
-# Type alias for mapping tensor names to actual tensors
-ActualTensors = Dict[str, Tensor]
 
 #####
 # Logic For Creating Placeholder Info

@@ -1,7 +1,7 @@
 from tinygrad.ops import PatternMatcher, UPat, UOp, Ops, graph_rewrite
 from tinygrad import Tensor
 from typing import Dict, Any, Optional, Tuple, List, Set
-from anytensor.core import ActualTensors
+from anytensor.types import ActualTensors
 
 
 #####

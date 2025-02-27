@@ -3,7 +3,7 @@ import pathlib
 import random
 from typing import List
 from tinygrad import Tensor, dtypes
-from anytensor.core import TensorContext, GraphProgram
+from anytensor.core import TensorContext, GraphProgram, execute_graph_on_gpu
 
 
 @click.group()
@@ -65,7 +65,7 @@ def placeholder_export(output, shape, dtype):
     click.echo("\n### Creating placeholder and adding with first 4 tensors ###")
     tensor_context = TensorContext()
     placeholder_name = f"placeholder_{random.randint(10, 99)}"
-    placeholder = tensor_context.new_input(placeholder_name, tensor_shape, tensor_dtype)
+    placeholder = tensor_context.add_graph_input(placeholder_name, tensor_shape, tensor_dtype)
     partial_sum = sum(tensors[:4]) + placeholder
 
     # Export the schedule
@@ -88,7 +88,7 @@ def placeholder_export(output, shape, dtype):
         click.echo(f"Error importing task: {exported_task}")
         return
 
-    result = tensor_context.import_task(exported_task, {placeholder_name: tensors[4]})
+    result = execute_graph_on_gpu(exported_task, {placeholder_name: tensors[4]})
     if isinstance(result, ValueError):
         click.echo(f"Error substituting placeholders: {result}")
         return

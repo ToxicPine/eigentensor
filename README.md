@@ -1,8 +1,10 @@
 # EigenTensor
 
-> the easiest way to deploy code onto GPUs ever. oh, and the result of each computation is verifiable.
+> the easiest way to deploy work onto a remote GPU ever. oh, and the result of each computation is verifiable.
 
-## Purpose
+TLDR: We implemented a universal, memory-safe, cross-platform format and runtime for GPU computations, which can run efficiently on any AVS node. We achieved this by reverse-engineering the undocumented internal representation of tinygrad, a popular open-source machine learning library. This gives developers access to the full extent of each GPU's capabilities without permitting malicious code execution, offering more functionality than Kite, Autonome, and Hyperbolic. It also supports tinygrad's familiar high-level API, often used by ML engineers. The key breakthrough came from exploiting a bug in tinygrad's BUFFER UOp implementation, which lets us substitute input values into the computational graph for execution on any GPU node. We also implemented basic consensus mechanisms to ensure the result of each computation is correct.
+
+## Why?
 
 Building GPU applications is hard. Whether you're deploying LLMs, doing scientific computing, or any other GPU-intensive task, you quickly run into limitations:
 
@@ -16,7 +18,7 @@ EigenTensor solves this by taking the popular tinygrad library - known for its s
 2. Deploy them to any GPU node, without any risk of malicious code execution
 3. Get a simple REST API for your GPU application, featuring one-click deployment
 
-The cross-verification of results comes as standard, with a simple economic security model that makes it irrational for nodes to cheat.
+Results are automatically verified through consensus between multiple nodes. Our economic incentive model ensures nodes are rewarded for honest computation and penalized for dishonest behavior, making cheating unprofitable.
 
 No more wrestling with GPU complexities. No more framework limitations. Just write your computation in tinygrad, and EigenTensor handles the rest.
 
@@ -24,15 +26,18 @@ No more wrestling with GPU complexities. No more framework limitations. Just wri
 
 EigenTensor leverages tinygrad as its computational backbone for several key reasons:
 
-1. **Lazy Evaluation**: rather than immediately executing instructions, tinygrad builds out a graph representing all of the instructions which need to be executed on the GPU. This graph is not GPU-code, so it's memory-safe, cross-platform and can be optimized on a per-node basis. Yet, any two devices executing the same graph will get the same result, so it becomes possible to build a system of consensus around the result of each computation.
-2. **Model Compatibility**: many existing ML models are already specified in tinygrad, making them immediately usable within EigenTensor
-3. **Cross-Platform**: tinygrad runs efficiently across CPU, GPU, and other accelerators without code changes
-4. **Optimization Features**: automatic kernel fusion, graph rewrites, and other optimizations boost performance
-5. **Small Footprint**: lightweight codebase (<5000 lines) is easier to audit and less prone to vulnerabilities
+1. **Lazy Evaluation**: rather than immediately executing instructions, tinygrad builds out a graph representing all operations to be executed on the GPU
+2. **Memory Safety**: the computational graph is not GPU code, making it memory-safe and cross-platform
+3. **Consensus Support**: any two devices executing the same graph will get identical results, enabling consensus verification
+4. **Model Compatibility**: many existing ML models are already specified in tinygrad, making them immediately usable
+5. **Cross-Platform**: runs efficiently across CPU, GPU, and other accelerators without code changes
+6. **Graph Optimization**: automatic kernel fusion and graph rewrites boost performance
+7. **Per-Node Tuning**: the graph compiles into code which is heavily optimized for each specific node
+8. **Small Footprint**: lightweight codebase (<5000 lines) is easier to audit and less prone to vulnerabilities
 
-## How It Works
+Alternative ways of accomplishing the same goals would either limit the applicability of EigenTensor to only certain types of computations, or be significantly more complex to use.
 
-EigenTensor consists of three main components:
+## How To Use EigenTensor
 
 ### 1. Task Definition & Export
 
@@ -52,7 +57,9 @@ result = input_a @ input_b
 task = context.compile_to_graph(result)
 ```
 
-Remember, computations are executed lazily, so we're not actually computing anything yet.
+Since computations are executed lazily, defining `result` does not actually compute anything yet. Here, `result` is represented by a computational graph, which can be safely shared across multiple nodes.
+
+This API may be slightly clunky for now, but it's entirely compatible with tinygrad's API and enables existing models to be used with minimal changes.
 
 ### 2. Local Execution
 
@@ -67,11 +74,9 @@ inputs = {
     "matrix_b": Tensor.ones((1000, 1000))
 }
 
-# Execute remotely via API
+# Execute locally
 result = execute_graph_on_gpu(computational_graph, inputs)
 ```
-
-We also provide tools for fetching model weights over the internet or local cache, specified by a UUID (hash of the file).
 
 ```python
 # Fetch weights from a URL
@@ -89,6 +94,22 @@ result = execute_graph_on_gpu(task, inputs, weights)
 ### 3. Distributed Execution
 
 TODO!!
+
+## The Hackery
+
+The core innovation of EigenTensor came from discovering and exploiting a subtle implementation detail in TinyGrad's tensor representation system. 
+
+TinyGrad operates by building computational graphs that represent operations on tensors, rather than executing operations immediately. When you add two tensors, TinyGrad creates a node in this graph connecting them with an ADD operation. The actual GPU computation only happens when you call `.realize()` on a tensor.
+
+Our challenge was creating a system where computational graphs could be defined without specifying all input data upfront. We needed "placeholder" tensors that could be substituted with real data at execution time. This would allow us to share executable graphs that nodes could run with their own inputs.
+
+The solution involved modifying how TinyGrad's BUFFER operation works. Normally, a BUFFER operation takes a two-element tuple that encodes tensor information like shape and size. We discovered we could extend this tuple with a third element containing a special placeholder label string, without breaking TinyGrad's internal operations. 
+
+This hack was necessary because TinyGrad's official metadata systems (like VOID patterns) were incompatible with graph composition operations - using them would have made it impossible to combine graphs involving placeholder tensors. Our approach was the only viable method we found after extensive testing.
+
+With this technique, we could create computational graphs that referenced placeholder tensors. These graphs could represent an entire ML model's execution process. When a node wants to run the computation, our system uses the undocumented graph-rewriting API of tinygrad to substitute the placeholders with actual tensors containing their data. We then serialize the graph using safe techniques, allowing it to be safely shared, stored, and executed later on any compatible GPU.
+
+The consensus verification system built on top of this is inspired by my previous academic work on the EvML paper for Exo Labs, which modeled consensus for verifiable computation. This theoretical foundation informed our implementation of the economic security model that makes EigenTensor's execution trustworthy across distributed nodes.
 
 ## Economic Security Model
 
@@ -124,7 +145,7 @@ $(1-\alpha)(P-\epsilon C) + \alpha(1-\gamma)(P-\epsilon C) + \alpha\gamma(-S)$
 
 The system needs careful parameter tuning to ensure honesty remains profitable even under collusion attacks, while maintaining sufficient slashing penalties to deter widespread dishonesty.
 
-Notably, by purchasing multiple GPUs, the operator could increase the probability of collusion.
+Notably, by purchasing multiple GPUs, the operator could increase the probability of collusion. When there are enough possible nodes available for selection, it is difficult to influence the overall proportion of possible checking nodes that may jointly collude, so the probability of being caught when cheating remains high.
 
 ## Getting Started
 
