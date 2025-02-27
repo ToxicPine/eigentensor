@@ -4,6 +4,8 @@
 
 TLDR: We implemented a universal, memory-safe, cross-platform format and runtime for GPU computations, which can run efficiently on any AVS node. We achieved this by reverse-engineering the undocumented internal representation of tinygrad, a popular open-source machine learning library. This gives developers access to the full extent of each GPU's capabilities without permitting malicious code execution, offering more functionality than Kite, Autonome, and Hyperbolic. It also supports tinygrad's familiar high-level API, often used by ML engineers. The key breakthrough came from exploiting a bug in tinygrad's BUFFER UOp implementation, which lets us substitute input values into the computational graph for execution on any GPU node. We also implemented basic consensus mechanisms to ensure the result of each computation is correct.
 
+**SPECIAL NOTE:** you can split the graphs created by this tool into parts and run them on multiple GPUs!!! it doesn't parallelize the work, but it splits the VRAM requirements across multiple GPUs, which is a big deal!! VRAM is the limiting factor when running language models most of the time. we know that this is a good idea because it's used in the popular Exo inference software!
+
 ## Why?
 
 Building GPU applications is hard. Whether you're deploying LLMs, doing scientific computing, or any other GPU-intensive task, you quickly run into limitations:
