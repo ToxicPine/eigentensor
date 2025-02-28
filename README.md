@@ -139,6 +139,8 @@ The consensus verification system built on top of this is inspired by my previou
 
 ## Economic Security Model
 
+**NOTE: THIS VERSION OF THE SECURITY MODEL WAS NOT USED FOR THE EIGEN GAMES HACKATHON, REFER TO THE CORRESPONDING README FOR THE HACKATHON VERSION.**
+
 The security of EigenTensor relies on game-theoretic principles of EigenLayer's restaking model. From the perspective of an individual operator node:
 
 ### Node Decision Payoff Matrix
