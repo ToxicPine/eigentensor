@@ -128,3 +128,41 @@ def fetch_exported_task_by_uuid(
 
     with open(matching_file, "rb") as f:
         return GraphProgram.from_bytes(f.read())
+
+
+###
+# Get UUID From Bytes or File
+###
+
+
+def get_uuid_from_bytes(data: bytes, truncate: bool = False) -> str:
+    """Generate UUID from bytes using SHA256 hash.
+    
+    Args:
+        data: Bytes to generate UUID from
+        truncate: If True, return only first 8 characters of UUID
+        
+    Returns:
+        UUID string generated from SHA256 hash of input bytes
+    """
+    file_hash = hashlib.sha256(data).hexdigest()
+    # Convert hash to UUID format
+    uuid_str = str(uuid.UUID(file_hash[:32]))
+    if truncate:
+        return uuid_str[:8]
+    return uuid_str
+
+
+def get_uuid_from_file(file_path: str, truncate: bool = False) -> str:
+    """Generate UUID from file content.
+    
+    Args:
+        file_path: Path to the file to generate UUID from
+        truncate: If True, return only first 8 characters of UUID
+        
+    Returns:
+        UUID string generated from SHA256 hash of file contents
+    """
+    with open(file_path, 'rb') as f:
+        file_data = f.read()
+    return get_uuid_from_bytes(file_data, truncate)

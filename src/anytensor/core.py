@@ -283,7 +283,6 @@ class TensorContext:
     ) -> Tensor:
         """Create a new placeholder tensor and track it."""
         tensor = TensorTemplateManager().create(name, shape, dtype)
-        print(f"Created placeholder: {name}")
         self.placeholders.append(
             PlaceholderInfo(placeholder=True, name=name, shape=shape, dtype=dtype)
         )
